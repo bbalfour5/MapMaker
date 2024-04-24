@@ -1,0 +1,127 @@
+﻿@using MapMaker.Controllers;
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<style>
+    .selected {
+        background-color: #6a6eee;
+        color:white;
+    }
+</style>
+
+<div class="align-content-center ms-3">
+    <h2>My Maps</h2>
+</div>
+<div class="row d-flex justify-content-center">
+    <div class="col-3 col-lg-2">
+        <div class="card map-select" data-bs-toggle="modal" data-bs-target="#new-map-modal">
+            <div class="card-body py-5"><i class="fas fa-circle-plus align-content-center" style="font-size:48pt;"></i></div>
+            <div class="card-footer center-text">Create New Map</div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm(nameof(MapController.Index), "Map")){
+    <div class="modal fade" id="new-map-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Map</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="canvasColor" id="canvasColor" value="#ffffff" />
+                    <input type="hidden" name="landColor" id="landColor" value="#4a6741" />
+                    <input type="hidden" name="textColor" id="textColor" value="#000000" />
+                    <b>Select a Theme:</b>
+                    <div class="card theme-choice selected" id="modern">
+                        <div class="card-body py-5">
+                            <span>
+                                <label class="form-label">Background Color:</label>
+                                <input type="color" value="#ffffff" disabled id="modernBackground"/>
+                            </span>
+                            <span>
+                                <label class="form-label">Land Color:</label>
+                                <input type="color" value="#f4da95" disabled id="modernLand"/>
+                            </span>
+                            <span>
+                                <label class="form-label">Text Color:</label>
+                                <input type="color" value="#000000" disabled id="modernText"/>
+                            </span>
+                        </div>
+                        <div class="card-footer center-text">Modern</div>
+                    </div>
+                    <div class="card theme-choice" id="fantasy">
+                        <div class="card-body py-5">
+                            <span>
+                                <label class="form-label">Background Color:</label>
+                                <input type="color" value="#00a7be" disabled id="fantasyBackground"/>
+                            </span>
+                            <span>
+                                <label class="form-label">Land Color:</label>
+                                <input type="color" value="#74b72e" disabled id="fantasyLand"/>
+                            </span>
+                            <span>
+                                <label class="form-label">Text Color:</label>
+                                <input type="color" value="#000000" disabled id="fantasyText"/>
+                            </span>
+                        </div>
+                        <div class="card-footer center-text">Fantasy</div>
+                    </div>
+                    <div class="card theme-choice" id="custom">
+                        <div class="card-body py-5">
+                            <span>
+                                <label class="form-label" id="customBackground">Background Color:</label>
+                                <input type="color" value="#ffffff" disabled />
+                            </span>
+                            <span>
+                                <label class="form-label" id="customLand">Land Color:</label>
+                                <input type="color" value="#4a6741" disabled />
+                            </span>
+                            <span>
+                                <label class="form-label" id="customText">Text Color:</label>
+                                <input type="color" value="#000000" disabled />
+                            </span>
+                        </div>
+                        <div class="card-footer center-text">Custom</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Map</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts{
+    <script>
+        $('.theme-choice').on('click', function(){
+            let themes = document.getElementsByClassName('theme-choice');
+            for(let i = 0; i < themes.length; i++)
+                themes[i].classList.remove('selected');
+            $(this).addClass('selected');
+
+            let palette = $(this).attr('id');
+            $('#canvasColor').val($('#' + palette + 'Background').val());
+            $('#landColor').val($('#' + palette + 'Land').val());
+            $('#textColor').val($('#' + palette + 'Text').val());
+        })
+
+        $('.customBackground').on('change', function(){
+            if($('.selected').first().attr('id') == 'custom')
+                $('#canvasColor').val($(this).val());
+        });
+        $('.customLand').on('change', function(){
+            if($('.selected').first().attr('id') == 'custom')
+                $('#landColor').val($(this).val());
+        });
+        $('.customText').on('change', function(){
+            if($('.selected').first().attr('id') == 'custom')
+                $('#textColor').val($(this).val());
+        });
+    </script>
+}

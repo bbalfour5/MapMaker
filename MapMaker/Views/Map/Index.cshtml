@@ -1,0 +1,550 @@
+﻿@model MapMaker.Models.ViewModels.MapIndexViewModel;
+
+@{
+    ViewData["Title"] = "Create/Edit Map";
+}
+<head>
+    <script>
+        // Global Variables
+        var brushSize = 5;
+        var brushColor = '@(Model.ColorPalette.LandColor)';
+        var lineColor = '@(Model.ColorPalette.LandColor)';
+        var eraserSize = 5;
+        var backgroundColor = '@(Model.ColorPalette.CanvasColor)';
+        var lineSize = 10;
+        var lineColor = '@(Model.ColorPalette.LandColor)';
+        var textFont = "'Times New Roman', Times, serif";
+        var textSize = 12;
+        var cityType = 'circle';
+        var citySize = 10;
+        var cityColor = '@(Model.ColorPalette.TextColor)';
+        var landmassColor = '@(Model.ColorPalette.LandColor)';
+        var toolSelect, toolPan, toolBrush, toolEraser, toolLine, toolText, toolCity;
+    </script>
+</head>
+
+
+<style>
+    .top-panel{
+        background-color: rgba(33, 37, 41, 1);
+        width:100%;
+        border:solid 1px #808080;
+        height:15%;
+    }
+
+    .left-panel {
+        background-color: rgba(33, 37, 41, 1);
+        border-bottom: solid 1px #808080;
+        border-right: solid 1px #808080;
+        height:89%;
+        padding-right:0;
+    }
+
+    .right-panel {
+        background-color: rgba(33, 37, 41, 1);
+        border-bottom: solid 1px #808080;
+        border-left: solid 1px #808080;
+        height: 89%;
+    }
+
+    .canvas-panel{
+        border-bottom:solid 1px #808080;
+        height:89%;
+    }
+
+    .file-button{
+        margin-top:auto;
+        margin-bottom:auto;
+        width:40px;
+        height:40px;
+        border-radius:10px;
+        margin-left:10px;
+    }
+
+    .select-button{
+        margin-top: auto;
+        margin-bottom: auto;
+        width: 40px;
+        height: 40px;
+    }
+
+    .mode-button {
+        margin-top: auto;
+        margin-bottom: auto;
+        height:40px;
+    }
+
+    .btn-dark.selected{
+        background-color:#6a6eee;
+    }
+
+    .left-panel-header{
+        border-top:solid 1px #808080;
+        border-bottom:solid 1px #808080;
+    }
+
+    .fa-chevron-up, .fa-chevron-down{
+        height:100%;
+        margin-top:auto;
+        margin-bottom:auto;
+    }
+
+    .slider-value{
+        width:10%;
+    }
+
+    .size-slider{
+        width:90%;
+        height:25px;
+        background:#d3d3d3;
+        outline:none;
+        opacity:0.7;
+        transition:opacity .2s;
+    }
+
+        .size-slider:hover{
+            opacity:1;
+        }
+
+        .size-slider::-webkit-slider-thumb{
+                width: 25px;
+                height: 25px;
+                border-radius:10px;
+                background: #000000;
+                cursor: pointer;
+        }
+
+        .size-slider:-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 10px;
+            background: #000000;
+            cursor: pointer;
+        }
+</style>
+
+<div class="row" style="margin-top:-15px;height:99%;">
+    <!--Header-->
+    <div class="col-12 top-panel px-3 d-flex">
+        <div class="row w-100">
+            <div class="col-5 d-flex">
+                <button class="btn btn-dark file-button"><i class="fas fa-plus"></i></button>
+                <button class="btn btn-dark file-button"><i class="fas fa-folder-open"></i></button>
+                <button class="btn btn-dark file-button"><i class="fas fa-file-import"></i></button>
+                <button class="btn btn-dark file-button" data-bs-toggle="tooltip" data-bs-placement="bottom" id="save" title="Save"><i class="fas fa-floppy-disk"></i></button>
+                <button class="btn btn-dark file-button" data-bs-toggle="tooltip" data-bs-placement="bottom" id="download" title="Download" onclick="downloadAsSVG();"><i class="fas fa-download"></i></button>
+            </div>
+            <div class="btn-group ps-5 col-2">
+                <button class="btn btn-dark selected select-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Select" onclick="toolSelect.activate();"><i class="fas fa-arrow-pointer"></i></button>
+                @* <button class="btn btn-dark select-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Multiselect"><i class="fas fa-grip"></i></button>
+                <button class="btn btn-dark select-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Lasso"><i class="fas fa-circle"></i></button>
+                *@ <button class="btn btn-dark select-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Pan" onclick="toolPan.activate();"><i class="fas fa-arrows-alt"></i></button>
+            </div>
+            <div class="col-4"></div>
+            <div class="col-1 d-flex">
+                <div class="btn-group float-end">
+                    <button class="btn btn-dark selected mode-button" id="editMode">Edit</button>
+                    <button class="btn btn-dark mode-button" id="viewMode">View</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Draw Panel-->
+    <div class="col-3 left-panel ps-3">
+        <div class="left-panel-header ps-2" data-bs-toggle="collapse" data-bs-target="#drawing-tools" aria-expanded="false" aria-controls="drawing-tools">
+            Draw
+            <i class="float-end fas fa-chevron-down" style="width:40px;"></i>
+        </div>
+        <div class="collapse tools-collapsible ps-2" id="drawing-tools">
+            <div class="row">
+                <button class="btn btn-dark select-button file-button my-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Road" id="Draw" onclick="toolBrush.activate();">
+                    <i class="fas fa-road"></i>
+                </button>
+                <button class="btn btn-dark select-button file-button my-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Line" id="Line" onclick="toolLine.activate();">
+                    <i class="fas fa-chart-line"></i>
+                </button>
+                <button class="btn btn-dark select-button file-button my-2" data-bs-toggle="tooltip" data-bs-placement="top" title="City" id="City" onclick="toolCity.activate();">
+                    <i class="fas fa-city"></i>
+                </button>
+                <!--Paint bucket is difficult, because it typically uses flood fill rather than vector graphics-->
+@*                 <button class="btn btn-dark select-button file-button my-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Fill- Coming Soon" disabled>
+                    <i class="fas fa-fill-drip"></i>
+                </button>
+                <button class="btn btn-dark select-button file-button my-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Erase" id="Erase" onclick="toolEraser.activate();">
+                    <i class="fas fa-eraser"></i>
+                </button> *@
+                <button class="btn btn-dark select-button file-button my-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Draw Landmass" id="Landmass" onclick="toolLandmass.activate();">
+                    <i class="fas fa-splotch"></i>
+                </button>
+                <br />
+                <div class="d-none" id="brush-tools">
+                    <label class="form-label">Brush Size</label><br />
+                    <div class="d-inline-flex w-100">
+                        <span class="slider-value" id="brush-size-value">10</span>
+                        <input class="size-slider" id="brush-size" type="range" min="1" max="30" step="1" value="10" />
+                    </div>
+                    <label class="form-label">Brush Color</label>
+                    <input type="color" id="brush-color" value="@Model.ColorPalette.LandColor"/>
+                </div>
+                <div class="d-none" id="line-tools">
+                    <label class="form-label">Line Size</label>
+                    <div class="d-inline-flex w-100">
+                        <span class="slider-value" id="line-size-value">10</span>
+                        <input class="size-slider" id="line-size" type="range" min="1" max="30" step="1" value="10" />
+                    </div>
+                    <label class="form-label">Line Color</label>
+                    <input type="color" id="line-color" value="@Model.ColorPalette.LandColor" />
+                </div>
+                <div class="d-none" id="city-tools">
+                    <label class="form-label">City Type</label><br />
+                    <select class="d-inline-flex w-100 mb-2" id="city-type">
+                        <option value="circle" selected>Circle</option>
+                    </select>
+                    <div class="d-inline-flex w-100">
+                        <span class="slider-value" id="city-size-value">10</span>
+                        <input class="size-slider" id="city-size" type="range" min="1" max="30" step="1" value="10" />
+                    </div>
+                    <label class="form-label">City Color</label>
+                    <input type="color" id="city-color" value="@Model.ColorPalette.TextColor" />
+                </div>
+                <div class="d-none" id="landmass-tools">
+                    <label class="form-label">Landmass Color</label>
+                    <input type="color" id="landmass-color" value="@Model.ColorPalette.LandColor" />
+                </div>
+@*                <div class="d-none" id="eraser-tools">
+                    <label class="form-label">Eraser Size</label>
+                    <div class="d-inline-flex w-100">
+                        <span class="slider-value" id="eraser-size-value">10</span>
+                        <input class="size-slider" id="eraser-size" type="range" min="1" max="50" step="1" value="10" />
+                    </div>
+                </div> *@
+            </div>
+        </div>
+        <div class="left-panel-header ps-2" data-bs-toggle="collapse" data-bs-target="#text-tools" aria-expanded="false" aria-controls="text-tools">
+            Text
+            <i class="float-end fas fa-chevron-down" style="width:40px;"></i>
+        </div>
+        <div class="collapse tools-collapsible ps-2" id="text-tools">
+            <button class="btn btn-dark select-button file-button my-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Text" onclick="toolText.activate();">
+                <i class="fas fa-font"></i>
+            </button>
+            <div class="input-group my-2 pe-2">
+                <span class="input-group-text">Font</span>
+                <select class="form-select" id="font-select" style="font-family:'Times New Roman', Times, serif">
+                    <option value="'Times New Roman', Times, serif" style="font-family:'Times New Roman', Times, serif">Times New Roman</option>
+                    <option value="Arial" style="font-family:Arial">Arial</option>
+                    <option value="'Comic Sans MS'" style="font-family:'Comic Sans MS'">Comic Sans</option>
+                </select>
+            </div>
+            <div class="input-group pe-2 my-2">
+                <span class="input-group-text">Size</span>
+                <select class="form-select" id="font-size-select" style="font-size:12pt;">
+                    <option value="8pt" style="font-size:8pt;" >8</option>
+                    <option value="10pt" style="font-size:10pt;" >10</option>
+                    <option value="12pt" style="font-size:12pt;" selected>12</option>
+                    <option value="14pt" style="font-size:14pt;">14</option>
+                    <option value="16pt" style="font-size:16pt;">16</option>
+                    <option value="24pt" style="font-size:24pt;">24</option>
+                    <option value="36pt" style="font-size:36pt;">36</option>
+                    <option value="48pt" style="font-size:48pt;">48</option>
+                    <option value="60pt" style="font-size:60pt;">60</option>
+                    <option value="72pt" style="font-size:72pt;">72</option>
+                </select>
+            </div>
+        </div>
+@*         <div class="left-panel-header ps-2" data-bs-toggle="collapse" data-bs-target="#terrain-tools" aria-expanded="false" aria-controls="drawing-tools">
+            Terrain
+            <i class="float-end fas fa-chevron-down" style="width:40px;"></i>
+        </div>
+        <div class="collapse tools-collapsible ps-2" id="terrain-tools">
+            Terraining Tools Coming Soon
+        </div> *@
+    </div>
+    <!--Canvas-->
+    <div class="col-7 canvas-panel overflow-auto">
+        <canvas id="mainCanvas" width="900" height="530" style="background-color:@(Model.ColorPalette.CanvasColor);">
+
+        </canvas>
+    </div>
+    <!--Layering Panel-->
+    <div class="col-2 right-panel">
+        <div class="row">
+            <div class="col-6 py-2">
+                Layers:<br />
+                <div class="btn-group-vertical">
+                    <span class="btn btn-secondary disabled"><i class="fas fa-layer-group"></i></span>
+                    <button class="btn btn-dark layer-button selected" id="layer-1">1</button>
+                    <button class="btn btn-secondary" id="add-layer"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+            <div class="col-6 py-2">
+                Special Layers:<br />
+                <div class="btn-group-vertical">
+                    <span class="btn btn-secondary disabled"><i class="fas fa-layer-group"></i></span>
+                    <button class="btn btn-secondary" onclick="alert('Specialty Layers Coming Soon!')"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <span>Current Zoom: </span><span id="current-zoom">0</span>
+            <div class="input-group my-2">
+                <div class="input-group-text">Min Zoom</div>
+                <input id="minLayerZoom" class="input-group-text" type="number" step="1" min="0" max="1000" value="0" disabled ></input>
+            </div>
+            <div class="input-group my-2">
+                <div class="input-group-text">Max Zoom</div>
+                <input id="maxLayerZoom" class="input-group-text" type="number" step="1" min="0" max="1000" value="1000" disabled ></input>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/lib/paper/dist/paper-full.js"></script>
+    <script type="text/javascript" src="~/js/tools.js"></script>
+    <script type="text/javascript" src="~/js/download.js"></script>
+
+    <script>
+        function FillZoomData() {
+            debugger;
+
+            let layerButtons = document.getElementsByClassName('layer-button');
+            let numLayers = layerButtons.length;
+            let selected = 0;
+            for (let i = 0; i < numLayers; i++) {
+                if (layerButtons[i].classList.contains('selected')) {
+                    selected = i;
+                    break;
+                }
+            }
+            let minZoom = Math.floor((1000 / numLayers) * selected);
+            let maxZoom = Math.floor(((1000 / numLayers) * selected) + (1000 / numLayers) - 1);
+            if (selected == numLayers - 1)
+                maxZoom = 1000;
+
+            $('#minLayerZoom').val(minZoom);
+            $('#maxLayerZoom').val(maxZoom);
+        }
+    </script>
+
+    <!--Tool selection-->
+    <script>
+        $('.select-button').on('click', function (e) {
+            let selectButtons = document.getElementsByClassName('select-button');
+            for (let i = 0; i < selectButtons.length; i++) {
+                selectButtons[i].classList.remove('selected');
+            }
+            $(this).addClass('selected');
+
+            if($(this).attr('title') != 'Select'){
+                HandleClickEvent(e, null);
+            }
+
+            //TODO: Refactor this code
+            if (document.getElementById('Draw').classList.contains('selected')) {
+                document.getElementById('brush-tools').classList.remove('d-none');
+                document.getElementById('line-tools').classList.add('d-none');
+                document.getElementById('city-tools').classList.add('d-none');
+                document.getElementById('landmass-tools').classList.add('d-none');
+            }
+            else if (document.getElementById('Line').classList.contains('selected')) {
+                document.getElementById('brush-tools').classList.add('d-none');
+                document.getElementById('line-tools').classList.remove('d-none');
+                document.getElementById('city-tools').classList.add('d-none');
+                document.getElementById('landmass-tools').classList.add('d-none');
+            }
+            else if (document.getElementById('City').classList.contains('selected')) {
+                document.getElementById('brush-tools').classList.add('d-none');
+                document.getElementById('line-tools').classList.add('d-none');
+                document.getElementById('city-tools').classList.remove('d-none');
+                document.getElementById('landmass-tools').classList.add('d-none');
+            }
+            else if (document.getElementById('Landmass').classList.contains('selected')) {
+                document.getElementById('brush-tools').classList.add('d-none');
+                document.getElementById('line-tools').classList.add('d-none');
+                document.getElementById('city-tools').classList.add('d-none');
+                document.getElementById('landmass-tools').classList.remove('d-none');
+            }
+            else{
+                document.getElementById('brush-tools').classList.add('d-none');
+                document.getElementById('line-tools').classList.add('d-none');
+                document.getElementById('city-tools').classList.add('d-none');
+                document.getElementById('landmass-tools').classList.add('d-none');
+            }
+        });
+        $('.mode-button').on('click', function () {
+            let modeButtons = document.getElementsByClassName('mode-button');
+            for (let i = 0; i < modeButtons.length; i++) {
+                modeButtons[i].classList.remove('selected');
+            }
+            $(this).addClass('selected');
+            if ($(this).attr('id') == 'editMode') {
+                ChangeLayer();
+            }
+            else {
+                let layer = GetLayerFromZoom(parseFloat($('#current-zoom').html()));
+                ZoomChangeLayer(layer);
+            }
+        });
+        $(document).on('click', '.layer-button', function (e) {
+            let layerButtons = document.getElementsByClassName('layer-button');
+
+            if(e.ctrlKey){
+                $(this).addClass('selected');
+            }
+            else {
+                for (let i = 0; i < layerButtons.length; i++) {
+                    layerButtons[i].classList.remove('selected');
+                }
+                $(this).addClass('selected');
+            }
+
+            FillZoomData();
+
+            if(document.getElementById('editMode').classList.contains('selected'))
+                ChangeLayer();
+        });
+
+    </script>
+
+    <script>
+        // $(document).on('click', '.fa-chevron-down', function () {
+        //     this.classList.remove('fa-chevron-down');
+        //     this.classList.add('fa-chevron-up');
+        // })
+        // $(document).on('click', '.fa-chevron-up', function () {
+        //     this.classList.remove('fa-chevron-up');
+        //     this.classList.add('fa-chevron-down');
+        // })
+    </script>
+    <!--Change font on ui-->
+    <script>
+        $('#font-select').on('change', function () {
+            $(this).css('font-family', $(this).val());
+        });
+        $('#font-size-select').on('change', function () {
+            $(this).css('font-size', $(this).val());
+        });
+    </script>
+    <!--Add New Layer-->
+    <script>
+        $(document).on('click', '#add-layer', function () {
+            let layerSelects = document.getElementsByClassName('layer-button');
+            if (layerSelects.length >= 10) {
+                alert('Layer Limit Reached!');
+                return;
+            }
+            let nextIndex = layerSelects.length + 1;
+            let newButton = '<button class="btn btn-dark layer-button" id="layer-' + nextIndex + '">' + nextIndex + '</button>';
+            AddNewLayer(nextIndex);
+            $('.layer-button').last().after(newButton);
+            FillZoomData();
+        });
+    </script>
+    <!--Change drawing tool size and color-->
+    <script>
+        $('#brush-size').on('input', function () {
+            brushSize = $(this).val() / 2;
+            $('#brush-size-value').html($(this).val());
+        });
+        $('#brush-color').on('input', function () {
+            brushColor = $(this).val();
+        })
+        $('#eraser-size').on('input', function () {
+            eraserSize = $(this).val() / 2;
+            $('#eraser-size-value').html($(this).val());
+        });
+        $('#line-size').on('input', function () {
+            lineSize = $(this).val();
+            $('#line-size-value').html($(this).val());
+        });
+        $('#line-color').on('input', function () {
+            lineColor = $(this).val();
+        })
+        $('#city-type').on('input', function () {
+            cityType = $(this).val();
+        })
+        $('#city-color').on('input', function() {
+            cityColor = $(this).val();
+        })
+        $('#city-size').on('input', function () {
+            citySize = $(this).val();
+            $('#city-size-value').html($(this).val());
+        });
+        $('#landmass-color').on('input', function () {
+            landmassColor = $(this).val();
+        })
+        $('#font-select').on('input', function () {
+            textFont = $(this).val();
+        })
+        $('#font-size-select').on('input', function () {
+            textSize = $(this).val();
+        })
+    </script>
+
+    <!--Script for Zoom & Pan-->
+    <script>
+        //Zoom
+        $(document).ready(function(){
+	        $('#mainCanvas').on('mousewheel', function(event) {
+                var canvas = this;
+		        var newZoom = paper.view.zoom; 
+		        var oldZoom = paper.view.zoom;
+                var minZoom = 1;
+                var maxZoom = 50;
+		
+		        if (event.originalEvent.deltaY < 0) {			
+			        newZoom = paper.view.zoom * 1.05;
+		        } else{
+			        newZoom = paper.view.zoom * 0.95;
+		        }
+
+                if(newZoom < minZoom)
+                    newZoom = minZoom;
+                if(newZoom > maxZoom)
+                    newZoom = maxZoom;
+
+                var displayZoom = Math.log10(newZoom) * 588.7 ;
+                $('#current-zoom').html(displayZoom.toFixed(0));
+
+                if (document.getElementById('viewMode').classList.contains('selected')) {
+                    let layer = GetLayerFromZoom(displayZoom);
+                    ZoomChangeLayer(layer);
+                }
+		
+		        var beta = oldZoom / newZoom;
+		
+		        var mousePosition = new paper.Point(event.offsetX, event.offsetY);
+		
+		        //viewToProject: gives the coordinates in the Project space from the Screen Coordinates
+		        var viewPosition = paper.view.viewToProject(mousePosition);
+		
+		        var mpos = viewPosition;
+		        var ctr = paper.view.center;
+		
+		        var pc = mpos.subtract(ctr);
+		        var offset = mpos.subtract(pc.multiply(beta)).subtract(ctr);	
+		
+		        paper.view.zoom = newZoom;
+		        paper.view.center = paper.view.center.add(offset);
+
+                if(paper.view.center.x + (paper.view.size._width / 2) > canvas.width){
+                    paper.view.center.x = canvas.width - (paper.view.size._width / 2);
+                }
+                else if(paper.view.center.x - (paper.view.size._width / 2) < 0){
+                    paper.view.center.x = paper.view.size._width / 2; 
+                }
+                if(paper.view.center.y + (paper.view.size._height / 2) > canvas.height){
+                    paper.view.center.y = canvas.height - (paper.view.size._height / 2);
+                }
+                else if(paper.view.center.y - (paper.view.size._height / 2) < 0){
+                    paper.view.center.y = paper.view.size._height / 2;
+                }
+		
+		        event.preventDefault();
+		        paper.view.draw();			
+	        });	
+        });	
+
+    </script>
+}

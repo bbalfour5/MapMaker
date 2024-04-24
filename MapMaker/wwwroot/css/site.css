@@ -1,0 +1,85 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+body:not(.header, .footer){
+    background-color: #212121;
+    color: #eeeeee;
+}
+
+.footer{
+    background-color:rgb(33,37,41) !important;
+}
+
+[class^="fa-"], [class*="fa-"]{
+    display: inline-block;
+    width:100%;
+}
+
+i{
+    text-align:center;
+}
+
+.card{
+    background-color: rgba(33, 37, 41, 0.8);
+    color:#007acc;
+}
+
+.card-footer {
+    background-color: rgba(53, 57, 61, 0.5);
+    color:#cccccc;
+}
+
+.center-text{
+    display:inline-block;
+    width:100%;
+    text-align:center;
+}
+
+map-select {
+    cursor: pointer;
+}
+
+.map-select:hover {
+    background-color: #cccccc;
+    color: #f86a03;
+    border-color: transparent;
+}
+
+.map-select:hover > .card-footer {
+    background-color: rgba(33, 37, 41, 0.8);
+}
+
+.btn-dark{
+    border:solid 1px #808080;
+    border-radius:1px;
+}
+
+.modal{
+    background-color:#212121;
+    color:#cccccc;
+}
+
+.modal-content {
+    background-color: #212121;
+    color: #cccccc;
+}
